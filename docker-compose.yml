@@ -1,0 +1,83 @@
+services: # Sección principal que agrupa y define los contenedores individuales (servicios) que componen el ecosistema
+  
+  # --- CONFIGURACIÓN DEL MOTOR DE BASE DE DATOS ---
+  postgres: # Nombre identificador único del servicio dentro de la red interna de Docker (actúa como el DNS)
+    image: postgres:16-alpine # Descarga la imagen oficial de PostgreSQL versión 16 empaquetada sobre una distribución Linux Alpine ultra ligera
+    container_name: rambler_postgres # Nombre exacto que se le asignará al contenedor físico y que verás listado en tu Docker Desktop
+    restart: unless-stopped # Regla de reinicio: se levanta solo ante fallos o reinicios de la PC, a menos que tú lo apagues manualmente
+    environment: # Bloque para inyectar variables de entorno dinámicas que configuran el comportamiento interno del contenedor
+      POSTGRES_DB: ${POSTGRES_DB} # Nombre de la base de datos inicial que se creará de forma automática al arrancar por primera vez
+      POSTGRES_USER: ${POSTGRES_USER} # Nombre del usuario administrador principal con superpoderes dentro de esta base de datos
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD} # Contraseña de acceso para ese administrador (extraída de forma segura desde el archivo externo .env)
+
+    volumes: # Mapeo de almacenamiento para asegurar que la información no sea efímera ni se destruya (PERSISTENCIA)
+      - postgres_data:/var/lib/postgresql/data  #Conecta el volumen global 'postgres_data' con la ruta interna donde Linux almacena físicamente los registros
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks: # Asigna este contenedor a la red virtual aislada del proyecto para que pueda comunicarse con los demás
+      - rambler_net 
+
+    # Bloque avanzado que audita en tiempo real si el motor interno de la base de datos ya está operativo
+    healthcheck: #starting, healthy, y unhealthy
+      # Comando nativo de Postgres ejecutado internamente para verificar si el puerto acepta conexiones con ese usuario y BD
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      # Frecuencia: Docker ejecutará la prueba de conectividad cada 10 segundos exactos
+      interval: 10s                   #Cada cuanto docker hace la prueba mientras PostgreSQL esta arrancando 
+      # Tiempo de gracia: si el comando tarda más de 5 segundos en responder, se considera un intento fallido      
+      timeout: 5s                       #Cuanto espera Docker a que pg_isready responda antes de considerar el intento fallido. 
+                                        #PostgreSQL está en la misma máquina, no en otro continente
+
+      # Margen de error: Docker intentará la prueba hasta 5 veces antes de marcar oficialmente el contenedor como "enfermo"      
+      retries: 5                        #¿Cuántos fallos consecutivos toleras antes de declarar el contenedor como enfermo?
+
+  fastapi:
+    build: ./fastapi
+    container_name: rambler_fastapi
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      # ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}          
+      GROQ_API_KEY: ${GROQ_API_KEY}
+    networks:
+      - rambler_net
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: rambler_n8n
+    restart: unless-stopped
+    ports: 
+      - "5678:5678"
+    environment: 
+      DB_TYPE: postgresdb #le dice a n8n qué tipo de base de datos usar
+      DB_POSTGRESDB_HOST: postgres #el servidor
+      DB_POSTGRESDB_PORT: 5432  #el puerto
+      DB_POSTGRESDB_DATABASE: ${N8N_DB} #el nombre de la BD
+      DB_POSTGRESDB_USER: ${POSTGRES_USER} #el usuario
+      DB_POSTGRESDB_PASSWORD: ${POSTGRES_PASSWORD} #la contraseña
+      N8N_USER: ${N8N_USER}
+      N8N_PASSWORD: ${N8N_PASSWORD}
+      N8N_BASIC_AUTH_ACTIVE: "true"
+      GENERIC_TIMEZONE: "America/Bogota"
+      N8N_HOST: localhost
+      N8N_PROTOCOL: http
+    volumes:
+      - n8n_data:/home/node/.n8n
+      
+    networks:
+      - rambler_net
+    depends_on:
+      postgres:
+        condition: service_healthy     
+
+networks: #Le dice a Docker que cree la red rambler_net. Sin esta declaración, los contenedores no pueden unirse a ella aunque la referencien.
+  rambler_net:
+    driver: bridge #es el tipo de red. Es el puente virtual que conecta los contenedores entre sí.
+
+volumes: #Le dice a Docker que cree los volúmenes nombrados. Sin esta declaración, Docker no sabe que postgres_data y n8n_data son volúmenes gestionados por él.
+  postgres_data:
+  n8n_data: 
