@@ -99,11 +99,11 @@ def procesar(id_conversacion: uuid.UUID,  session = Depends(get_session)):
                                     "description" : "El mensaje de texto amigable, comercial y profesional que el bot le enviará al usuario por Telegram respondiendo sus dudas usando el catalogo"
                                 },
                                 "productos_interes" : {
-                                    "type" : "string",
+                                    "type" : ["string", "null"],
                                     "description" : "Retornar los productos de interes del cliente."
                                 },
                                 "ciudad" : {
-                                    "type" : "string",
+                                    "type" : ["string", "null"],
                                     "description" : "Ciudad desde donde el cliente realiza el contacto."
                                 },
                                 "debe_escalar" : {
@@ -125,7 +125,7 @@ def procesar(id_conversacion: uuid.UUID,  session = Depends(get_session)):
             "respuesta" : datos_parseados.get("respuesta_cliente", ""), 
             "escalar" : True if (datos_parseados.get("debe_escalar", False) in [True, "True", "true"]) else False,
             "productos_interes": datos_parseados.get("productos_interes", None),
-            "ciudad": datos_parseados.get("ciudad", None) #.get() Retorna None si el campo no existe.
+            "ciudad": datos_parseados.get("ciudad", None) 
         }
 
 
