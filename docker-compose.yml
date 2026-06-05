@@ -53,6 +53,8 @@ services: # Sección principal que agrupa y define los contenedores individuales
     ports: 
       - "5678:5678"
     environment: 
+      N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: "true"
+      N8N_PROXY_HOPS: "1"
       DB_TYPE: postgresdb #le dice a n8n qué tipo de base de datos usar
       DB_POSTGRESDB_HOST: postgres #el servidor
       DB_POSTGRESDB_PORT: 5432  #el puerto
@@ -62,9 +64,13 @@ services: # Sección principal que agrupa y define los contenedores individuales
       N8N_USER: ${N8N_USER}
       N8N_PASSWORD: ${N8N_PASSWORD}
       N8N_BASIC_AUTH_ACTIVE: "true"
+      N8N_DEFAULT_LOCALE: es
       GENERIC_TIMEZONE: "America/Bogota"
-      N8N_HOST: localhost
-      N8N_PROTOCOL: http
+      N8N_HIDE_USAGE_PAGE: "true"
+      N8N_ATTRIBUTION: "false"
+      # N8N_HOST: localhost
+      N8N_PROTOCOL: https
+      WEBHOOK_URL: ${WEBHOOK_URL}
     volumes:
       - n8n_data:/home/node/.n8n
       
