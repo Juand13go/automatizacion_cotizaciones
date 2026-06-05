@@ -59,8 +59,9 @@ client = OpenAI(api_key=os.getenv("GROQ_API_KEY"), base_url="https://api.groq.co
 def procesar(id_conversacion: uuid.UUID,  session = Depends(get_session)):
     producto = session.exec(select(productos)).all()
     catalogoProductos = [f" Producto: {c.nombre_producto} | Precio Regular:  {c.precio_regular} | Precio venta:  {c.precio_venta} | Categoría: {c.categoria} " for c in producto]
+    catalogoProductosVariable = "\n".join(catalogoProductos)
     historial = cargarHistorial(id_conversacion=id_conversacion, session=session)
-    if historial == []:  #Es mas de python usar if not historial:
+    if not historial:  #Es mas de python usar if not historial: que es lo mismo que if historial == []:
         return {
             "respuesta": "¡Hola! Bienvenido a Industrias Rambler S.A. ¿Desde qué ciudad nos contactas?",
             "escalar": False,
@@ -71,7 +72,16 @@ def procesar(id_conversacion: uuid.UUID,  session = Depends(get_session)):
         response = client.chat.completions.create(
             model = "llama-3.3-70b-versatile",
             max_tokens = 1024,
-            messages=[ {"role": "system", "content": "Eres el agente encargado del manejo de cotizaciones de Industrias Rambler S.A, vas a recibir el historial de un chat con los mensajes del cliente + el catalogo con los productos: \n" + "\n".join(catalogoProductos) + "Ten en cuenta que el publico al que te diriges es de Colombia, tienes cuatro funciones (dos de ellas no obligatorias), empieza el chat saludando al cliente y preguntandole por su ubicación (La retornaras en ciudad, pero en caso de que no conteste con esa respuesta, a ciudad le asignas None) , retornar los productos de interes en caso de que el cliente los mencione sino retornas None, entregar una respuesta para enviarla al chat con el cliente, y la segunda es entregar un valor booleano marcando el estado de escalación del lead, marca True si el cliente muestra clara intención de compra (ej. quiere dejar sus datos, pide cotización formal, pregunta dónde pagar), si está muy enojado o si pide explicitamente hablar con un asesor humano. De lo contrario, marca False" + "El mensaje de texto amigable, comercial y profesional que el bot le enviará al usuario por Telegram respondiendo sus dudas usando el catalogo"}] + [{"role" : m.rol, "content" : m.contenido} for m in reversed(historial)],
+            messages=[{
+                        "role": "system", "content": f"""Eres el agente encargado del manejo de cotizaciones de Industrias Rambler S.A, vas a recibir el historial de un chat con 
+                        los mensajes del cliente + el catalogo con los productos: {catalogoProductosVariable} Ten en cuenta que el publico al que te diriges es de Colombia, empieza el chat saludando al cliente y preguntandole por su ubicación 
+                        (La retornaras en ciudad, pero en caso de que no conteste con esa respuesta, a ciudad le asignas valor None (no me refiero a un valor vacío, me refiero 
+                        al tipo de dato None)), retornar los productos de interes en caso de que el cliente los mencione sino retornas None (no me refiero a un valor vacío, 
+                        me refiero al tipo de dato None), entregar una respuesta para enviarla al chat con el cliente; entregar un valor booleano marcando el estado de escalación 
+                        del lead, marca True (Como booleano) si el cliente muestra clara intención de compra (ej. quiere dejar sus datos, pide cotización formal, pregunta dónde 
+                        pagar), si está muy enojado o si pide explicitamente hablar con un asesor humano. De lo contrario, marca False (Como booleano). El mensaje de texto 
+                        amigable, comercial y profesional que el bot le enviará al usuario por Telegram respondiendo sus dudas usando el catalogo"""
+            }] + [{"role" : m.rol, "content" : m.contenido} for m in reversed(historial)],
             tools=[
                 {
                     "type" : "function",
@@ -112,12 +122,11 @@ def procesar(id_conversacion: uuid.UUID,  session = Depends(get_session)):
         datos_parseados = json.loads(texto_respuesta)
 
         return {
-            "respuesta" : datos_parseados["respuesta_cliente"], 
-            "escalar" : datos_parseados.get(["debe_escalar"] in [True, False, "True", "False", "true", "false"], False), 
+            "respuesta" : datos_parseados.get("respuesta_cliente", ""), 
+            "escalar" : True if (datos_parseados.get("debe_escalar", False) in [True, "True", "true"]) else False,
             "productos_interes": datos_parseados.get("productos_interes", None),
             "ciudad": datos_parseados.get("ciudad", None) #.get() Retorna None si el campo no existe.
         }
-    
 
 
 # client = anthropic.AsyncAnthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))     CON ASINCRONISMO
