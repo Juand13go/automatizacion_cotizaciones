@@ -1,5 +1,3 @@
-# from asyncio import tools      CON ASINCRONISMO
-# import anthropic
 import uuid
 from sqlmodel import select
 from fastapi import FastAPI, Depends
@@ -127,59 +125,3 @@ def procesar(id_conversacion: uuid.UUID,  session = Depends(get_session)):
             "productos_interes": datos_parseados.get("productos_interes", None),
             "ciudad": datos_parseados.get("ciudad", None) 
         }
-
-
-# client = anthropic.AsyncAnthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))     CON ASINCRONISMO
-# client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY")) CON EL API DE CLAUDE/ANTHROPIC
-# client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))   CON EL API DE OPEN AI
-
-# @app.post('/procesar')
-# # async def procesar(id_conversacion: uuid.UUID,  session = Depends(get_session)):    CON ASINCRONISMO
-# def procesar(id_conversacion: uuid.UUID,  session = Depends(get_session)):
-#     producto = session.exec(select(productos)).all()
-#     catalogoProductos = [f" Producto: {c.nombre_producto} | Precio Regular:  {c.precio_regular} | Precio venta:  {c.precio_venta} | Categoría: {c.categoria} " for c in producto]
-#     # historial = await cargarHistorial(id_conversacion=id_conversacion, session=session)  //CON ASINCRONISMO
-#     historial = cargarHistorial(id_conversacion=id_conversacion, session=session)
-#     # response = await client.messages.create(                CON ASINCRONISMO
-#     response = client.messages.create(
-#         model = "claude-sonnet-4-20250514",
-#         max_tokens = 1024,
-#         system = "Eres el agente encargado del manejo de cotizaciones de Industrias Rambler S.A, vas a recibir el historial de un chat con los mensajes del cliente + el catalogo con los productos" + "Ten en cuenta que el publico al que te diriges es de Colombia, tienes dos funciones, entregar una respuesta para enviarla al chat con el cliente, y la segunda es entregar un valor booleano marcando el estado de escalación del lead, marca True si el cliente muestra clara intención de compra (ej. quiere dejar sus datos, pide cotización formal, pregunta dónde pagar), si está muy enojado o si pide explicitamente hablar con un asesor humano. De lo contrario, marca False" + "El mensaje de texto amigable, comercial y profesional que el bot le enviará al usuario por Telegram respondiendo sus dudas usando el catalogo" + "\n".join(catalogoProductos),
-#         # # EL CAMINO LARGO TRADICIONAL
-#         # historial_claude = []  # 1. Creas una lista vacía
-
-#         # for m in historial:  # 2. Recorres tus modelos de la base de datos
-#         #     # 3. Creas el diccionario con el formato que Claude entiende
-#         #     diccionario_mensaje = {"role": m.rol, "content": m.contenido}
-#         #     # 4. Lo metes a la lista
-#         #     historial_claude.append(diccionario_mensaje)
-#         messages=[{"role": m.rol, "content": m.contenido} for m in reversed(historial)],
-#         tools=[
-#             {
-#                 "name" : "evaluar_y_responder",
-#                 "description" : "Herramienta obligatoria para generar la respuesta al cliente de Industrias Rambler S.A y decidir si se requiere atención humana.",
-
-#                 "input_schema":{
-#                     "type" : "object",
-                    
-#                     "properties" : {
-#                         "respuesta_cliente" : {
-#                             "type" : "string",
-#                             "description" : "El mensaje de texto amigable, comercial y profesional que el bot le enviará al usuario por Telegram respondiendo sus dudas usando el catalogo"
-#                         },
-#                         "debe_escalar" : {
-#                             "type" : "boolean",
-#                             "description" : "Marca True si el cliente muestra clara intención de compra (ej. quiere dejar sus datos, pide cotización formal, pregunta dónde pagar), si está muy enojado o si pide explicitamente hablar con un asesor humano. De lo contrario, marca False"
-#                         }
-#                     },
-#                     "required" : ["respuesta_cliente", "debe_escalar"]
-#                 }
-#             }
-#         ],
-#         tool_choice={"type": "tool", "name": "evaluar_y_responder"}
-#     )
-#     texto_respuesta = response.content[0].input
-#     return {
-#         "respuesta" : texto_respuesta["respuesta_cliente"],
-#         "escalar" : texto_respuesta["debe_escalar"]      
-#     }

@@ -1,7 +1,7 @@
-fastapi
-uvicorn
-psycopg2-binary
-sqlalchemy
-sqlmodel
-anthropic
-openai
+fastapi==0.138.1
+uvicorn==0.49.0
+psycopg2-binary==2.9.12
+sqlalchemy==2.0.51
+sqlmodel==0.0.39
+openai==2.44.0
+alembic==1.18.5
