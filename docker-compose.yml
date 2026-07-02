@@ -35,6 +35,7 @@ services: # Sección principal que agrupa y define los contenedores individuales
   # =========================================================================
   fastapi: # Nombre identificador único del servicio para tu lógica de negocio en Python
     build: ./fastapi # En lugar de bajar una imagen de internet, compila una propia buscando el archivo 'Dockerfile' dentro de la carpeta local ./fastapi
+    command: sh -c "alembic upgrade head && python seed.py && uvicorn main:app --host 0.0.0.0 --port 8000 --reload"
     container_name: rambler_fastapi # Nombre físico que identificará a tu backend en la consola y Docker Desktop
     restart: unless-stopped # Si Python se cae por un error inesperado, Docker lo reinicia automáticamente en milisegundos
     ports: # Mapeo de puertos para abrir canales de comunicación entre tu computadora física y el contenedor
@@ -52,7 +53,7 @@ services: # Sección principal que agrupa y define los contenedores individuales
       - ./fastapi:/app 
   # =========================================================================
   # --- CONFIGURACIÓN DEL ORQUESTADOR DE AUTOMATIZACIÓN (N8N) -------------
-  # =========================================================================
+  # ========================================================================= 
   n8n: # Nombre identificador del servicio para la plataforma de automatizaciones visuales
     image: n8nio/n8n:latest # Descarga la última imagen oficial estable del software n8n desde el registro público de Docker Hub
     container_name: rambler_n8n # Nombre del contenedor físico que verás en la interfaz de usuario de Docker
