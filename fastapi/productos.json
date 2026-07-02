@@ -1,0 +1,73 @@
+[
+    { 
+        "id_woocommerce": 1,
+        "nombre_producto" : "Colchon R1", 
+        "precio_regular" : 6793000, 
+        "precio_venta" : 2717200, 
+        "categoria" : "Colchones suaves"
+    },
+    {
+        "id_woocommerce": 2,
+        "nombre_producto" : "Colchon R22", 
+        "precio_regular" : 3426000,
+        "precio_venta" : 1541700, 
+        "categoria" : "Colchones suaves"
+    },
+        { 
+        "id_woocommerce": 3,
+        "nombre_producto" : "Colchon R5", 
+        "precio_regular" : 5740000,  
+        "precio_venta" : 2296000,
+        "categoria" : "Colchones suaves"
+    },
+    {
+        "id_woocommerce": 4,
+        "nombre_producto" : "Pillow en Viscoelastica",  
+        "precio_regular" : 608000,  
+        "precio_venta" : 516800, 
+        "categoria" : "Colchones suaves"
+    },
+    { 
+        "id_woocommerce": 5,
+        "nombre_producto" : "Pillow Relajante", 
+        "precio_regular" : 288000, 
+        "precio_venta" : 244800, 
+        "categoria" : "Colchones suaves"
+    },
+    {
+        "id_woocommerce": 6,
+        "nombre_producto" : "Colchon Confortop", 
+        "precio_regular" : 3102000,  
+        "precio_venta" : 1395900, 
+        "categoria" : "Colchones semifirmes"
+    },
+    { 
+        "id_woocommerce": 7,
+        "nombre_producto" : "Colchon Flexy", 
+        "precio_regular" : 1522000,
+        "precio_venta" : 684900, 
+        "categoria" : "Colchones semifirmes"
+    },                                                                                 
+
+    {
+        "id_woocommerce": 8,
+        "nombre_producto" : "Colchon R3", 
+        "precio_regular" : 3252000,  
+        "precio_venta" : 1463000,
+        "categoria" : "Colchones semifirmes"
+    },
+    { 
+        "id_woocommerce": 9,
+        "nombre_producto" : "Colchon R30 1P", 
+        "precio_regular" : 3216000,  
+        "precio_venta" : 1447200, 
+        "categoria" : "Colchones semifirmes"
+    },
+    {
+        "id_woocommerce": 10,
+        "nombre_producto" : "Colchon R30 2P", 
+        "precio_regular" : 3472000, 
+        "precio_venta" : 1562400, 
+        "categoria" : "Colchones semifirmes"
+    }
+]

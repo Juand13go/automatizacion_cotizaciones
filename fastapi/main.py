@@ -50,7 +50,7 @@ def crearLead(id_conversacion: uuid.UUID, productos_interes: str, ciudad: str, e
     session.commit() 
     session.refresh(lead)
     return lead
-
+    
 client = OpenAI(api_key=os.getenv("GROQ_API_KEY"), base_url="https://api.groq.com/openai/v1")
 
 @app.post('/procesar')

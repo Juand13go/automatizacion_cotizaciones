@@ -9,4 +9,3 @@ def get_session():
     with Session(engine) as session:
         yield session #Pausa la función y entrega la sesión al endpoint. Cuando el endpoint termina, la función continúa y el with cierra la sesión automáticamente.
 
-    
