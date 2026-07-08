@@ -26,6 +26,7 @@ CONSUMER KEY Y SECRET DE WOOCOMMERCE
 Clonar el repositorio 
 Crear el .env 
 docker compose up 
+Para el proxy inverso con ngrok: ngrok http 5678 (Recibiras una URL HTTPS, modifica la variable WEBHOOK_URL en el .env )
 
 ## Estructura del proyecto
 
