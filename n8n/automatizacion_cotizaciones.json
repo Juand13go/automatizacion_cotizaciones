@@ -1,0 +1,438 @@
+{
+  "name": "automatizacion_cotizaciones",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1456,
+        208
+      ],
+      "id": "406ad947-f0f7-4114-874c-68922653f5a6",
+      "name": "Telegram Trigger",
+      "webhookId": "c0896c63-3263-4817-8f26-d8becc68d2df",
+      "credentials": {
+        "telegramApi": {
+          "id": "ffmrOiFKjfW15PJr",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://fastapi:8000/conversacion",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "canal_user_id",
+              "value": "={{ $json.message.chat.id }}"
+            },
+            {
+              "name": "canal",
+              "value": "\"telegram\""
+            },
+            {
+              "name": "nombre",
+              "value": "={{ $json.message.from.first_name }} {{ $json.message.from.last_name }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -1248,
+        208
+      ],
+      "id": "a1dce9a2-77b4-45ac-b53f-7535744ce52a",
+      "name": "Búsqueda/Creación Conversación (FastAPI)"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://fastapi:8000/guardar_mensaje",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "id_conversacion",
+              "value": "={{ $json.id_conversacion }}"
+            },
+            {
+              "name": "rol",
+              "value": "user"
+            },
+            {
+              "name": "contenido",
+              "value": "={{ $('Telegram Trigger').item.json.message.text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -1040,
+        208
+      ],
+      "id": "3b8127cb-311a-4879-81fa-d90f97dc0b0a",
+      "name": "Guardar Mensaje Cliente"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://fastapi:8000/guardar_mensaje",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "id_conversacion",
+              "value": "={{ $('Búsqueda/Creación Conversación (FastAPI)').item.json.id_conversacion }}"
+            },
+            {
+              "name": "rol",
+              "value": "assistant"
+            },
+            {
+              "name": "contenido",
+              "value": "={{ $json.respuesta }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -608,
+        208
+      ],
+      "id": "5be4748d-5f55-4cf4-b1b0-ba7308a27010",
+      "name": "Guardar Mensaje Agente IA"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://fastapi:8000/procesar",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "id_conversacion",
+              "value": "={{ $json.id_conversacion }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -816,
+        208
+      ],
+      "id": "f118c423-309a-45d2-8413-bdb9a6406a12",
+      "name": "Procesamiento respuesta Agente"
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "http://fastapi:8000/estado",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "estado",
+              "value": "=escalado"
+            },
+            {
+              "name": "id_conversacion",
+              "value": "={{ $('Guardar Mensaje Cliente').item.json.id_conversacion }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "af57b851-80b2-44e1-8901-f99a00e352c8",
+      "name": "Actualización de estado de escalación"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "c43d8327-c7a2-4421-bbf6-549439588d73",
+              "leftValue": "={{ $('Procesamiento respuesta Agente').item.json.escalar }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -160,
+        208
+      ],
+      "id": "a0205fa4-f9d5-4c0b-822e-872543f2e775",
+      "name": "Rama condicional (Escalación)"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://fastapi:8000/crear_lead",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "id_conversacion",
+              "value": "={{ $('Guardar Mensaje Agente IA').item.json.id_conversacion }}"
+            },
+            {
+              "name": "productos_interes",
+              "value": "={{ $('Procesamiento respuesta Agente').item.json.productos_interes }}"
+            },
+            {
+              "name": "ciudad",
+              "value": "={{ $('Procesamiento respuesta Agente').item.json.ciudad }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        192,
+        0
+      ],
+      "id": "7e23a4d4-c354-4616-94da-aba12bf890cf",
+      "name": "Creación Lead"
+    },
+    {
+      "parameters": {
+        "chatId": "6560871955",
+        "text": "=🚨 ¡NUEVO LEAD ASIGNADO - INDUSTRIAS RAMBLER S.A.! 🚨\n\n¡Saludos, Juan Diego y equipo comercial! Se ha generado una nueva oportunidad de venta que requiere atención humana inmediata.\n\n📋 DATOS DEL PROSPECTO:\n• Cliente: {{ $('Telegram Trigger').item.json.message.from.first_name }} {{ $('Telegram Trigger').item.json.message.from.last_name }}\n• Ubicación: {{ $('Creación Lead').item.json.ciudad }}\n• Productos de Interés: {{ $('Creación Lead').item.json.productos_interes }}\n\n🆔 CONTROL INTERNO:\n• ID Lead: {{ $('Creación Lead').item.json.id_lead }}\n\nPor favor, pónganse en contacto con el cliente a la brevedad para asegurar el cierre de la venta y asesorarlo en su descanso. 🛏️✨",
+        "additionalFields": {
+          "appendAttribution": "={{ false }}"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        560,
+        0
+      ],
+      "id": "e56c3933-9126-4c25-894f-970e1a0e6f0a",
+      "name": "Alerta al Asesor del Lead",
+      "webhookId": "2414b655-22e9-45ab-9c9d-a67b711d19d0",
+      "credentials": {
+        "telegramApi": {
+          "id": "ffmrOiFKjfW15PJr",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "text": "¡Listo! Recibimos tus datos a la perfección. En Industrias Rambler S.A. sabemos que tu descanso no puede esperar, así que uno de nuestros asesores especializados se pondrá en contacto contigo muy pronto para ayudarte a encontrar el colchón ideal para tus sueños. 🛏️✨",
+        "additionalFields": {
+          "appendAttribution": "={{ false }}"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        384,
+        0
+      ],
+      "id": "63ee0ee7-2983-444f-92ae-64a1310775bc",
+      "name": "Confirmacion de la escalación del lead",
+      "webhookId": "871214f1-712a-4aad-bf6b-fbd5c989bcdb",
+      "credentials": {
+        "telegramApi": {
+          "id": "ffmrOiFKjfW15PJr",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "text": "={{ $json.contenido }}",
+        "additionalFields": {
+          "appendAttribution": "={{ false }}"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -384,
+        208
+      ],
+      "id": "e66ad2be-dec2-451c-8c80-a98695216e7e",
+      "name": "Respuesta Agente",
+      "webhookId": "50fed24d-0125-491e-8075-07242f44dce4",
+      "credentials": {
+        "telegramApi": {
+          "id": "ffmrOiFKjfW15PJr",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Búsqueda/Creación Conversación (FastAPI)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Búsqueda/Creación Conversación (FastAPI)": {
+      "main": [
+        [
+          {
+            "node": "Guardar Mensaje Cliente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardar Mensaje Cliente": {
+      "main": [
+        [
+          {
+            "node": "Procesamiento respuesta Agente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Procesamiento respuesta Agente": {
+      "main": [
+        [
+          {
+            "node": "Guardar Mensaje Agente IA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardar Mensaje Agente IA": {
+      "main": [
+        [
+          {
+            "node": "Respuesta Agente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Actualización de estado de escalación": {
+      "main": [
+        [
+          {
+            "node": "Creación Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rama condicional (Escalación)": {
+      "main": [
+        [
+          {
+            "node": "Actualización de estado de escalación",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Creación Lead": {
+      "main": [
+        [
+          {
+            "node": "Confirmacion de la escalación del lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Confirmacion de la escalación del lead": {
+      "main": [
+        [
+          {
+            "node": "Alerta al Asesor del Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respuesta Agente": {
+      "main": [
+        [
+          {
+            "node": "Rama condicional (Escalación)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "fed2b61c-98ff-4f55-99ce-9ef35aa069d2",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ba694f203369973f9a895ecf6095fd68c833dd936bcdc4bc75604940dc2acbc5"
+  },
+  "id": "iMIx6YdPMnhYwr7C",
+  "tags": []
+}
