@@ -34,9 +34,9 @@ def actualizar_estado_conversacion(estado: str, id_conversacion: uuid.UUID, sess
 def crear_lead(id_conversacion: uuid.UUID, productos_interes: str, ciudad: str, session: Session):
     lead = leads(id_conversacion=id_conversacion, productos_interes = productos_interes, ciudad = ciudad)
     session.add(lead)
-    session.commit() 
+    session.commit()
     session.refresh(lead)
     return lead
 
 def obtener_productos(session: Session):
-    return session.exec(select(productos)).all()
+    return session.exec(select(productos)).all()  

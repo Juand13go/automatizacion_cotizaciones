@@ -29,7 +29,6 @@ docker compose up
 Para el proxy inverso con ngrok: ngrok http 5678 (Recibiras una URL HTTPS, modifica la variable WEBHOOK_URL en el .env )
 
 ## Estructura del proyecto
-
 El dockerfile construye el servicio de fastapi. 
 El main.py almacena toda la logica de procesamiento y manipulacion de la informacion de la conversación 
 init.sql CREACION BD DE N8N

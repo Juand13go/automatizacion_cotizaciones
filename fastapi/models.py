@@ -23,7 +23,7 @@ class mensajes(SQLModel, table=True):
 class asesor(SQLModel, table=True):
     id_asesor : UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     nombre_asesor : str
-
+ 
 class leads(SQLModel, table=True):
     id_lead: UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     id_conversacion: UUID = Field(foreign_key="conversaciones.id_conversacion")
