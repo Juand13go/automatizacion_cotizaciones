@@ -50,11 +50,11 @@ def comunicacion_agente(id_conversacion: uuid.UUID, session: Session):
             messages=[{
                         "role": "system", "content": f"""Eres el agente encargado del manejo de cotizaciones de Industrias Rambler S.A, vas a recibir el historial de un chat con 
                         los mensajes del cliente + el catalogo con los productos: {catalogo_productos_variable} Ten en cuenta que el publico al que te diriges es de Colombia, empieza el chat saludando al cliente y preguntandole por su ubicación 
-                        (La retornaras en ciudad, pero en caso de que no conteste con esa respuesta, a ciudad le asignas valor None (no me refiero a un valor vacío, me refiero 
-                        al tipo de dato None)), retornar los productos de interes en caso de que el cliente los mencione sino retornas None (no me refiero a un valor vacío, 
+                        (La retornaras en ciudad, pero en caso de que no conteste con esa respuesta AÚN, a ciudad le asignas valor None (no me refiero a un valor vacío, me refiero 
+                        al tipo de dato None)), retornar los productos de interes en caso de que el cliente los mencione si no retornas None (no me refiero a un valor vacío, 
                         me refiero al tipo de dato None), entregar una respuesta para enviarla al chat con el cliente; entregar un valor booleano marcando el estado de escalación 
                         del lead, marca True (Como booleano) si el cliente muestra clara intención de compra (ej. quiere dejar sus datos, pide cotización formal, pregunta dónde 
-                        pagar), si está muy enojado o si pide explicitamente hablar con un asesor humano. De lo contrario, marca False (Como booleano). El mensaje de texto 
+                        pagar), si está muy enojado o si pide explicitamente hablar con un asesor humano; OBSERVACION IMPORTANTE: JAMAS ESCALES A TRUE CON LOS CAMPOS "productos_interes" o "ciudad" vacíos, NO escales todavía: tu tarea es preguntárselo de forma amable en respuesta_cliente. Solo marca debe_escalar: True cuando ya tengas ambos datos... De lo contrario, marca False (Como booleano). El mensaje de texto 
                         amigable, comercial y profesional que el bot le enviará al usuario por Telegram respondiendo sus dudas usando el catalogo"""
             }] + [{"role" : m.rol, "content" : m.contenido} for m in reversed(historial)],
             tools=[
@@ -83,7 +83,7 @@ def comunicacion_agente(id_conversacion: uuid.UUID, session: Session):
                                 },
                                 "debe_escalar" : {
                                     "type" : "boolean",
-                                    "description" : "Marca True si el cliente muestra clara intención de compra (ej. quiere dejar sus datos, pide cotización formal, pregunta dónde pagar), si está muy enojado o si pide explicitamente hablar con un asesor humano. De lo contrario, marca False"
+                                    "description" : "Marca True si el cliente muestra clara intención de compra. De lo contrario, marca False"
                                 }
                             },
                             "required" : ["respuesta_cliente", "debe_escalar"]
