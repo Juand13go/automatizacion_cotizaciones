@@ -40,8 +40,8 @@ def comunicacion_agente(id_conversacion: uuid.UUID, session: Session):
         return {
             "respuesta": "¡Hola! Bienvenido a Industrias Rambler S.A. ¿Desde qué ciudad nos contactas?",
             "escalar": False,
-            "productos_interes": None,
-            "ciudad": None
+            "productos_interes": "",
+            "ciudad": ""
         }
     else:
         response = client.chat.completions.create(
@@ -50,9 +50,8 @@ def comunicacion_agente(id_conversacion: uuid.UUID, session: Session):
             messages=[{
                         "role": "system", "content": f"""Eres el agente encargado del manejo de cotizaciones de Industrias Rambler S.A, vas a recibir el historial de un chat con 
                         los mensajes del cliente + el catalogo con los productos: {catalogo_productos_variable} Ten en cuenta que el publico al que te diriges es de Colombia, empieza el chat saludando al cliente y preguntandole por su ubicación 
-                        (La retornaras en ciudad, pero en caso de que no conteste con esa respuesta AÚN, a ciudad le asignas valor None (no me refiero a un valor vacío, me refiero 
-                        al tipo de dato None)), retornar los productos de interes en caso de que el cliente los mencione si no retornas None (no me refiero a un valor vacío, 
-                        me refiero al tipo de dato None), entregar una respuesta para enviarla al chat con el cliente; entregar un valor booleano marcando el estado de escalación 
+                        (La retornaras en ciudad, pero en caso de que no conteste con esa respuesta AÚN, a ciudad le asignas valor "" (un str vacío)), 
+                        retornar los productos de interes en caso de que el cliente los mencione si no retornas "" (un str vacío), entregar una respuesta para enviarla al chat con el cliente; entregar un valor booleano marcando el estado de escalación 
                         del lead, marca True (Como booleano) si el cliente muestra clara intención de compra (ej. quiere dejar sus datos, pide cotización formal, pregunta dónde 
                         pagar), si está muy enojado o si pide explicitamente hablar con un asesor humano; OBSERVACION IMPORTANTE: JAMAS ESCALES A TRUE CON LOS CAMPOS "productos_interes" o "ciudad" vacíos, NO escales todavía: tu tarea es preguntárselo de forma amable en respuesta_cliente. Solo marca debe_escalar: True cuando ya tengas ambos datos... De lo contrario, marca False (Como booleano). El mensaje de texto 
                         amigable, comercial y profesional que el bot le enviará al usuario por Telegram respondiendo sus dudas usando el catalogo"""
@@ -74,11 +73,11 @@ def comunicacion_agente(id_conversacion: uuid.UUID, session: Session):
                                     "description" : "El mensaje de texto amigable, comercial y profesional que el bot le enviará al usuario por Telegram respondiendo sus dudas usando el catalogo"
                                 },
                                 "productos_interes" : {
-                                    "type" : ["string", "null"],
+                                    "type" : ["string"],
                                     "description" : "Retornar los productos de interes del cliente."
                                 },
                                 "ciudad" : {
-                                    "type" : ["string", "null"],
+                                    "type" : "string",
                                     "description" : "Ciudad desde donde el cliente realiza el contacto."
                                 },
                                 "debe_escalar" : {
@@ -96,9 +95,17 @@ def comunicacion_agente(id_conversacion: uuid.UUID, session: Session):
         texto_respuesta = response.choices[0].message.tool_calls[0].function.arguments
         datos_parseados = json.loads(texto_respuesta)
 
+        respuesta = datos_parseados.get("respuesta_cliente", "")
+        escalar = True if (datos_parseados.get("debe_escalar", False) in [True, "True", "true"]) else False
+        productos_interes = (datos_parseados.get("productos_interes") or  "").strip()
+        ciudad = (datos_parseados.get("ciudad") or "").strip()
+
+        if not ciudad or not productos_interes:
+            escalar = False
+
         return {
-            "respuesta" : datos_parseados.get("respuesta_cliente", ""), 
-            "escalar" : True if (datos_parseados.get("debe_escalar", False) in [True, "True", "true"]) else False,
-            "productos_interes": datos_parseados.get("productos_interes", None),
-            "ciudad": datos_parseados.get("ciudad", None) 
+            "respuesta" : respuesta, 
+            "escalar" : escalar,
+            "productos_interes": productos_interes,
+            "ciudad": ciudad 
         }

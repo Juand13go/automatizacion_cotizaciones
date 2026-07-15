@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional
 import uuid
 
@@ -28,8 +28,8 @@ class EstadoSalida(BaseModel):
 
 class LeadEntrada(BaseModel):
     id_conversacion: uuid.UUID
-    productos_interes: str
-    ciudad: str
+    productos_interes: str = Field(min_length=1)
+    ciudad: str = Field(min_length=1)
 
 class ProcesarEntrada(BaseModel):
     id_conversacion : uuid.UUID
