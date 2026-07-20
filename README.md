@@ -9,8 +9,10 @@ envió el mensaje (humano o agente), actualizacion estado conversacion.
 POSTGRESQL BD (SISTEMA GESTOR DE DATOS) 
 n8n (Tecnologia para la automatizacion de flujos y tareas repetitivas (BASE DEL PROYECTO)) 
 FastAPI-Python (Framework - Usado para la logica del proyecto) 
-Claude api key (LLM, AGENTE IA) 
+Claude API Key (LLM, AGENTE IA) 
 Docker (Herramienta escencial para mantenibilidad, una arquitectura limpia y para facil acceso al proyecto en cualquier maquina)
+Migraciones con Alembic 
+Schemas de Pydantic (Validación de los datos que entran y salen)
 
 ## Requisitos
 El sistema corre en docker, esta tecnologia se encarga de que el sistema funcione sin tener que instalar nada, pero las dependencias del proyecto estan en el 
@@ -19,18 +21,19 @@ requirements.txt
 ## Configuración
 TOKEN TELEGRAM BOT
 NOMBRE DB, USER, PASSWORD PARA POSTGRESQL Y LA N8N_DB 
-API KEY CLAUDE 
+API KEY GROQ 
 CONSUMER KEY Y SECRET DE WOOCOMMERCE
 
 ## Cómo levantar el entorno
 Clonar el repositorio 
-Crear el .env 
-docker compose up 
+Crear el .env
+docker compose up
 Para el proxy inverso con ngrok: ngrok http 5678 (Recibiras una URL HTTPS, modifica la variable WEBHOOK_URL en el .env )
+Abrir el archivo con el flujo en n8n 'automatizacion_cotizaciones.json'
 
 ## Estructura del proyecto
 El dockerfile construye el servicio de fastapi. 
-El main.py almacena toda la logica de procesamiento y manipulacion de la informacion de la conversación 
-init.sql CREACION BD DE N8N
-esquemaBD.sql CREACION BD SERVICIO GENERAL POSTGRESQL
-docker-compose.yml Configuracion del docker 
+La estructura de este proyecto esta guiada por 3 capas (Servicio, Persistencia y API). En la capa de servicio encuentras toda la logica de la aplicación (En python nativo); 
+en la capa de persistencia encuentras todos los queries y comunicacion de la aplicación con la base de datos; y finalmente tenemos la capa de API con todos los endpoints 
+de FastAPI y los Schemas de Pydantic.
+docker-compose.yml Configuracion del docker y comandos de arranque y montaje de la BD (Creacion del esquema, inyeccion de datos a la BD (seed.py), arranque de la aplicación)
