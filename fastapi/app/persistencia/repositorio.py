@@ -1,6 +1,7 @@
 from models import conversaciones, mensajes, leads, productos
 from sqlmodel import select, Session
 import uuid
+from app.excepciones import ConversacionNoEncontrada
 
 def verificacion_existencia_conversacion(canal_user_id:str, session: Session): 
     conversacion = session.exec(select(conversaciones).where(conversaciones.canal_user_id == canal_user_id)).first()
@@ -25,11 +26,14 @@ def guardar_mensaje_por_rol(id_conversacion: uuid.UUID, rol:str, contenido:str, 
 
 def actualizar_estado_conversacion(estado: str, id_conversacion: uuid.UUID, session: Session):
     conversacion = session.exec(select(conversaciones).where(conversaciones.id_conversacion == id_conversacion)).first()
-    conversacion.estado = estado
-    session.add(conversacion)
-    session.commit()
-    session.refresh(conversacion)
-    return conversacion
+    if conversacion is None:
+        raise ConversacionNoEncontrada
+    else: 
+        conversacion.estado = estado
+        session.add(conversacion)
+        session.commit()
+        session.refresh(conversacion)
+        return conversacion
 
 def crear_lead(id_conversacion: uuid.UUID, productos_interes: str, ciudad: str, session: Session):
     lead = leads(id_conversacion=id_conversacion, productos_interes = productos_interes, ciudad = ciudad)

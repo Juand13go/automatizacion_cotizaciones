@@ -34,4 +34,5 @@ def creacion_de_leads(datos: LeadEntrada, session = Depends(get_session)):
 def procesar(datos: ProcesarEntrada,  session = Depends(get_session)):
     return comunicacion_agente(id_conversacion=datos.id_conversacion, session=session)
 
+
   
