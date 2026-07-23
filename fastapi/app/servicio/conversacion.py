@@ -7,6 +7,8 @@ import json
 import os
 import logging
 
+logger = logging.getLogger(__name__)
+
 def obtener_o_crear_conversacion(canal_user_id: str, canal: str, nombre: str, session):
     conversacion = verificacion_existencia_conversacion(canal_user_id, session)
     if conversacion:
@@ -33,9 +35,6 @@ def catalogo_a_texto(session: Session):
     return catalogo_productos_variable
 
 client = OpenAI(api_key=os.getenv("GROQ_API_KEY"), base_url="https://api.groq.com/openai/v1")
-
-logging.basicConfig(level=logging.ERROR)
-logger = logging.getLogger(__name__)
 
 def comunicacion_agente(id_conversacion: uuid.UUID, session: Session):
     historial = obtener_historial_conversacion(id_conversacion=id_conversacion, session=session)
