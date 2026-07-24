@@ -104,9 +104,9 @@ def comunicacion_agente(id_conversacion: uuid.UUID, session: Session):
             "ciudad": ciudad
         }
     except (OpenAIError, json.JSONDecodeError, IndexError, TypeError):
-        logger.exception("Ocurrió un error en la comunicación con el Agente de Groq.")
+        logger.exception(f"Error en la comunicación con el Agente de Groq [Conversación ID: {id_conversacion}]")
         return {
-            "respuesta" : "Lo sentimos, el sistema en este momento está presentando unos problemas, estamos trabajando en ellos para brindarle la atención que se merece.", 
+            "respuesta" : "Lo sentimos, en este momento nuestro sistema de atención presenta un inconveniente técnico temporal. 🛠️ Te invitamos a escribirnos nuevamente en unos minutos mientras lo solucionamos. ¡Agradecemos tu paciencia!", 
             "escalar" : False,
             "productos_interes": "",
             "ciudad": ""
